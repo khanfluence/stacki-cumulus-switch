@@ -15,7 +15,7 @@
 
   - name: Download frontend-install.py
     get_url:
-      url: https://raw.githubusercontent.com/Teradata/stacki/develop/tools/fab/frontend-install.py
+      url: https://raw.githubusercontent.com/Teradata/stacki/feature/auto_add_frontend_interfaces_to_db_STACKI_448/tools/fab/frontend-install.py
       dest: /root/
       mode: 0744
 

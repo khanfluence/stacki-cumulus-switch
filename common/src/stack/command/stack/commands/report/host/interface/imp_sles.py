@@ -112,6 +112,7 @@ class Implementation(stack.commands.Implementation):
 				if dhcp:
 					bootproto = 'dhcp'
 					if default:
+						# Apparently this is needed for AWS dhcp to pickup new hostname
 						self.owner.addOutput(host, 'DHCLIENT_SET_HOSTNAME="yes"')
 						self.owner.addOutput(host, 'DHCLIENT_SET_DEFAULT_ROUTE="yes"')
 					else:
