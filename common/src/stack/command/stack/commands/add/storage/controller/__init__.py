@@ -16,10 +16,17 @@ class Command(stack.commands.OSArgumentProcessor, stack.commands.HostArgumentPro
 	"""
 	Add a storage controller configuration to the database.
 
-	<arg type='string' name='scope'>
-	Zero or one argument. The argument is the scope: a valid os (e.g.,
-	'redhat'), a valid appliance (e.g., 'backend') or a valid host
-	(e.g., 'backend-0-0). No argument means the scope is 'global'.
+	<param type='string' name='scope'  optional='0'>
+	Zero or one parameter. The parameter is the scope for the provided name
+	(e.g., 'os', 'host', 'environment', 'appliance').
+	No scope means the scope is 'global', and no name will be accepted.
+	</param>
+
+	<arg type='string' name='name' optional='0'>
+	This argument can be nothing, a valid 'os' (e.g., 'redhat'), a valid
+	appliance (e.g., 'backend'), a valid environment (e.g., 'master_node'
+	or a host.
+	If nothing is supplied, then the configuration will be global.
 	</arg>
 
 	<param type='int' name='adapter' optional='1'>
@@ -57,13 +64,13 @@ class Command(stack.commands.OSArgumentProcessor, stack.commands.HostArgumentPro
 	equal to 2 will be created second, etc.
 	</param>
 
-	<example cmd='add storage controller backend-0-0 slot=1 raidlevel=0 arrayid=1'>
-	The disk in slot 1 on backend-0-0 should be a RAID 0 disk.
+	<example cmd='add storage controller backend-0-0 slot=1 raidlevel=0 arrayid=1 scope=host'>
+	The disk in slot 1 on backend-0-0 should be a RAID 0 disk, for the host 'backend-0-0'
 	</example>
 
-	<example cmd='add storage controller backend-0-0 slot=2,3,4,5,6 raidlevel=6 hotspare=7,8 arrayid=2'>
+	<example cmd='add storage controller backend-0-0 slot=2,3,4,5,6 raidlevel=6 hotspare=7,8 arrayid=2 scope=host'>
 	The disks in slots 2-6 on backend-0-0 should be a RAID 6 with two
-	hotspares associated with the array in slots 7 and 8.
+	hotspares associated with the array in slots 7 and 8, for the host 'backend-0-0'
 	</example>
 	"""
 

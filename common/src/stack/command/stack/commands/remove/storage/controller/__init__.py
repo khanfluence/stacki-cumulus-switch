@@ -17,10 +17,17 @@ class Command(stack.commands.remove.command,
 	"""
 	Remove a storage controller configuration from the database.
 
-	<arg type='string' name='scope'>
-	Zero or one argument. The argument is the scope: a valid os (e.g.,
-	'redhat'), a valid appliance (e.g., 'backend') or a valid host
-	(e.g., 'backend-0-0). No argument means the scope is 'global'.
+	<param type='string' name='scope'  optional='0'>
+	Zero or one parameter. The parameter is the scope for the provided name
+	(e.g., 'os', 'host', 'environment', 'appliance').
+	No scope means the scope is 'global', and no name will be accepted.
+	</param>
+
+	<arg type='string' name='name' optional='0'>
+	This argument can be nothing, a valid 'os' (e.g., 'redhat'), a valid
+	appliance (e.g., 'backend'), a valid environment (e.g., 'master_node'
+	or a host.
+	If nothing is supplied, then the configuration will be global.
 	</arg>
 
 	<param type='int' name='adapter' optional='1'>
@@ -38,13 +45,12 @@ class Command(stack.commands.remove.command,
 	adapter/enclosure address applies to all slots.
 	</param>
 
-	<example cmd='remove storage controller backend-0-0 slot=1'>
-	Remove the disk array configuration for slot 1 on backend-0-0.
+	<example cmd='remove storage controller backend-0-0 slot=1 scope=host'>
+	Remove the disk array configuration for slot 1 on the host 'backend-0-0'.
 	</example>
 
-	<example cmd='remove storage controller backend slot=1,2,3,4'>
-	Remove the disk array configuration for slots 1-4 for the backend
-	appliance.
+	<example cmd='remove storage controller backend slot=1,2,3,4 scope=appliance'>
+	Remove the disk array configuration for slots 1-4 for the appliance 'backend'.
 	</example>
 	"""
 

@@ -14,29 +14,34 @@ class Command(stack.commands.list.command,
 		stack.commands.OSArgumentProcessor,
 		stack.commands.ApplianceArgumentProcessor,
 		stack.commands.HostArgumentProcessor):
-
 	"""
 	List the storage controller configuration for one of the following:
 	global, os, appliance or host.
 
-	<arg optional='1' type='string' name='host'>
+	<param type='string' name='scope'  optional='0'>
+	Zero or one parameter. The parameter is the scope for the provided name
+	(e.g., 'os', 'host', 'environment', 'appliance').
+	No scope means the scope is 'global', and no name will be accepted.
+	</param>
+
+	<arg type='string' name='name' optional='0'>
 	This argument can be nothing, a valid 'os' (e.g., 'redhat'), a valid
-	appliance (e.g., 'backend') or a host.
-	If nothing is supplied, then the global storage controller
-	configuration will be output.
+	appliance (e.g., 'backend'), a valid environment (e.g., 'master_node'
+	or a host.
+	If nothing is supplied, then the configuration will be global.
 	</arg>
 
-	<example cmd='list storage controller backend-0-0'>
+	<example cmd='list storage controller backend-0-0 scope=host'>
 	List host-specific storage controller configuration for backend-0-0.
 	</example>
 
-	<example cmd='list storage controller backend'>
+	<example cmd='list storage controller backend scope=appliance'>
 	List appliance-specific storage controller configuration for all
 	backend appliances.
 	</example>
 
 	<example cmd='list storage controller'>
-	List global storage controller configuration for all hosts.
+	List global storage controller configuration.
 	</example>
 
 	"""

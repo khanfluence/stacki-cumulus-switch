@@ -4,20 +4,7 @@ import stack.commands
 
 class Command(stack.commands.add.command):
 	"""
-	Add a storage controller configuration to the database.
-
-	<param type='string' name='scope'  optional='0'>
-	Zero or one parameter. The parameter is the scope for the provided name
-	(e.g., 'os', 'host', 'environment', 'appliance').
-	No scope means the scope is 'global', and no name will be accepted.
-	</param>
-
-	<arg type='string' name='name' optional='0'>
-	This argument can be nothing, a valid 'os' (e.g., 'redhat'), a valid
-	appliance (e.g., 'backend'), a valid environment (e.g., 'master_node'
-	or a host.
-	If nothing is supplied, then the configuration will be global.
-	</arg>
+	Add a storage controller configuration for an appliance.
 
 	<param type='int' name='adapter' optional='1'>
 	Adapter address.
@@ -54,13 +41,13 @@ class Command(stack.commands.add.command):
 	equal to 2 will be created second, etc.
 	</param>
 
-	<example cmd='add storage controller backend-0-0 slot=1 raidlevel=0 arrayid=1 scope=host'>
-	The disk in slot 1 on backend-0-0 should be a RAID 0 disk.
+	<example cmd='add appliance storage controller backend slot=1 raidlevel=0 arrayid=1'>
+	The disk in slot 1 on backend-0-0 should be a RAID 0 disk, for the appliance 'backend'
 	</example>
 
-	<example cmd='add storage controller backend-0-0 slot=2,3,4,5,6 raidlevel=6 hotspare=7,8 arrayid=2 scope=host'>
+	<example cmd='add appliance storage controller backend slot=2,3,4,5,6 raidlevel=6 hotspare=7,8 arrayid=2'>
 	The disks in slots 2-6 on backend-0-0 should be a RAID 6 with two
-	hotspares associated with the array in slots 7 and 8.
+	hotspares associated with the array in slots 7 and 8, for the appliance 'backend'
 	</example>
 	"""
 

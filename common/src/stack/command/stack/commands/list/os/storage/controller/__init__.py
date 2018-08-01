@@ -4,24 +4,15 @@ import stack.commands
 
 class Command(stack.commands.list.command):
 	"""
-	List storage controller configuration for an oss.
+	List the storage controller configuration for an os.
 
-	<arg type='string' name='host' optional='1'>
-	OS Name
-	</arg>
+	<example cmd='list os storage controller redhat'>
+	List os-specific storage controller configuration for
+	os 'redhat'.
+	</example>
 
-	<param type='string' name='device' optional='1'>
-	Device whose controller configuration needs to be added to
-	the database.
-	</param>
-
-	<param type='string' name='mountpoint' optional='1'>
-	Mountpoint for the controller that needs to be added to
-	the database.
-	</param>
-
-	<example cmd='list os storage controller '>
-	Adds the controller information for environment
+	<example cmd='list os storage controller'>
+	List global storage controller configuration for all oses.
 	</example>
 	"""
 
