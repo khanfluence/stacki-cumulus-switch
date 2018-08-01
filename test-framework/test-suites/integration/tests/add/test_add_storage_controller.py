@@ -30,20 +30,25 @@ class TestAddStorageControllerScopes():
 	@pytest.mark.usefixtures("add_host")
 	def test_add_storage_controller_scope_param(self, host):
 		"""This should work and have no errors. """
-		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add storage controller backend scope=appliance adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller backend scope=appliance adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add storage controller backend-0-0 scope=host adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller backend-0-0 scope=host adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add storage controller sles scope=os adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller sles scope=os adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 		host.run('stack add environment test')
-		result = host.run('stack add storage controller test scope=environment adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller test scope=environment adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 
@@ -52,7 +57,8 @@ class TestAddStorageControllerScopes():
 		host.run('stack add host backend-0-0')
 		host.run('stack add host backend-0-1')
 		host.run('stack add host backend-0-2')
-		result = host.run('stack add storage controller a:backend scope=host adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller a:backend scope=host adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 
@@ -60,20 +66,25 @@ class TestAddStorageControllerScopes():
 	@pytest.mark.usefixtures("add_host")
 	def test_add_storage_controller_scope_verb(self, host):
 		"""This should work and have no errors. """
-		result = host.run('stack add storage controller adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 '
+		                  'slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 		host.run('stack add environment test')
-		result = host.run('stack add environment storage controller test adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add environment storage controller test adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 
@@ -82,30 +93,38 @@ class TestAddStorageControllerScopes():
 	@pytest.mark.usefixtures("add_host")
 	def test_add_storage_controller_double_add_partid_negative(self, host):
 		"""the first ones should work fine, then error out on the 2nd add."""
-		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 
 		# 2nd add:
-		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
-		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
-		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
-		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
 
@@ -114,37 +133,47 @@ class TestAddStorageControllerScopes():
 	def test_add_storage_controller_double_add_mount_negative(self, host):
 		"""The first ones should work fine, then error out on the 2nd add."""
 
-		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
-		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 		host.run('stack add environment test')
-		result = host.run('stack add environment storage controller test adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add environment storage controller test adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc == 0
 		assert '' == result.stdout
 
 		# 2nd add:
-		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add storage controller scope=global adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
-		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add appliance storage controller backend adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
-		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add host storage controller backend-0-0 adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
-		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add os storage controller sles adapter=1 arrayid=test enclosure=1 hotspare=0 '
+		                  'raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
-		result = host.run('stack add environment storage controller test adapter=1 arrayid=test enclosure=1 hotspare=0 raidlevel=1 slot=1,2')
+		result = host.run('stack add environment storage controller test adapter=1 arrayid=test enclosure=1 '
+		                  'hotspare=0 raidlevel=1 slot=1,2')
 		assert result.rc != 0
 		assert '' == result.stdout
 
