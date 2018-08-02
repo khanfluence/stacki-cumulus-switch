@@ -187,7 +187,7 @@ class TestAddStorageControllerScopes():
 			assert 'error - "arrayid" parameter is required' in result.stderr
 			result = host.run('stack add storage controller scope=%s arrayid=1' % scope)
 			assert result.rc == 255
-			assert 'error - "slot" or "hostpare" parameter is required' in result.stderr
+			assert 'error - "slot" or "hotspare" parameter is required' in result.stderr
 			if scope != 'global':
 				result = host.run('stack add storage controller scope=%s arrayid=1 slot=1' % scope)
 				assert result.rc == 255
