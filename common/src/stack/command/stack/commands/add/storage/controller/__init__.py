@@ -89,9 +89,12 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 
 
 	def validation(self, adapter, enclosure, slot, hotspare, raidlevel, arrayid):
-
+		"""
+		Validate the data input matches the requirements to be usable.
+		Also I wanted to be able to call self.validation
+		"""
 		if not hotspare and not slot:
-			raise ParamRequired(self, [ 'slot', 'hotspare' ])
+			raise ParamRequired(self, ['slot', 'hotspare'])
 		if arrayid != 'global' and not raidlevel:
 			raise ParamRequired(self, 'raidlevel')
 
@@ -119,9 +122,7 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 		if slot:
 			for s in slot.split(','):
 				if s == '*':
-					#
 					# represent '*' in the database as '-1'
-					#
 					s = -1
 				else:
 					try:
@@ -160,7 +161,7 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 		if arrayid == 'global' and len(hotspares) == 0:
 			raise ParamError(self, 'arrayid', 'is "global" with no hotspares. Please supply at least one hotspare')
 
-		# Some may have been modified to be -1/*
+		# Some may have been modified to be -1/*, turned into a list, etc.
 		return adapter, enclosure, slots, hotspares, arrayid
 
 
@@ -180,9 +181,7 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 
 		tableids = self.get_scope_name_tableid(scope, params, args)
 
-		#
 		# make sure the specification doesn't already exist
-		#
 		adapter, enclosure, slots, hotspares, arrayid = self.validation(adapter, enclosure, slot, hotspare,
 		                                                                raidlevel, arrayid)
 
@@ -200,9 +199,7 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 			elif arrayid == '*':
 				arrayid = -2
 
-			#
 			# now add the specifications to the database
-			#
 			for slot in slots:
 				self.db.execute("""insert into storage_controller
 					(scope, tableid, adapter, enclosure, slot,
@@ -220,4 +217,3 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 					raidlevel, arrayid, options) values (%s, %s, %s, %s,
 					%s, %s, %s, %s) """, (scope, tableid, adapter,
 					enclosure, hotspare, raidlevel, arrayid, options))
-

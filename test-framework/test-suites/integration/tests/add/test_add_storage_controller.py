@@ -9,11 +9,11 @@ class TestAddStorageControllerBase:
 
 	def test_add_storage_controller(self, host):
 		#this should work and have no errors
-		results = host.run('stack add storage controller redhat adapter=1 arrayid=2 enclosure=3 raidlevel=4 slot=5')
+		results = host.run('stack add storage controller adapter=1 arrayid=2 enclosure=3 raidlevel=4 slot=5')
 		assert results.rc == 0
 
 		#make sure that we are able to list the entry we just added
-		results = host.run('stack list storage controller redhat')
+		results = host.run('stack list storage controller')
 		assert 'redhat' in str(results.stdout)
 
 		#this should not work because 'blah' is not a valid scope
@@ -182,26 +182,23 @@ class TestAddStorageControllerScopes():
 		"""these shouldn't work"""
 		accepted_scopes = ['global', 'os', 'appliance', 'host']
 		for scope in accepted_scopes:
+			result = host.run('stack add storage controller scope=%s' % scope)
+			assert result.rc == 255
+			assert 'error - "arrayid" parameter is required' in result.stderr
+			result = host.run('stack add storage controller scope=%s arrayid=1' % scope)
+			assert result.rc == 255
+			assert 'error - "slot" or "hostpare" parameter is required' in result.stderr
 			if scope != 'global':
-				result = host.run('stack add storage controller scope=%s' % scope)
-				assert result.rc == 255
-				assert 'error - "device" parameter is required' in result.stderr
-				result = host.run('stack add storage controller scope=%s device=vda' % scope)
-				assert result.rc == 255
-				assert 'error - "size" parameter is required' in result.stderr
-				result = host.run('stack add storage controller scope=%s device=vda size=0' % scope)
+				result = host.run('stack add storage controller scope=%s arrayid=1 slot=1' % scope)
 				assert result.rc == 255
 				assert '"%s name" argument is required' % scope in result.stderr
-				result = host.run('stack add storage controller scope=%s device=vda size=0 test' % scope)
+				result = host.run('stack add storage controller scope=%s arrayid=1 slot=1 test' % scope)
 				assert result.rc == 255
 				if scope == 'host':
 					assert 'error - cannot resolve host "test"' in str(result.stderr).lower()
 				else:
 					assert '"test" argument is not a valid %s' % scope in str(result.stderr).lower()
 			else:
-				result = host.run('stack add storage controller scope=%s' % scope)
+				result = host.run('stack add storage controller scope=%s arrayid=1 slot=1' % scope)
 				assert result.rc == 255
-				assert 'error - "device" parameter is required' in result.stderr
-				result = host.run('stack add storage controller scope=%s device=vda' % scope)
-				assert result.rc == 255
-				assert 'error - "size" parameter is required' in result.stderr
+				assert 'error - "raidlevel" parameter is required' in result.stderr
