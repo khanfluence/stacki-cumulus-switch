@@ -10,10 +10,7 @@ import stack.commands
 from stack.exception import ArgRequired, ArgValue, ParamType, ParamValue, ParamError
 
 
-class Command(stack.commands.remove.command,
-		stack.commands.OSArgumentProcessor,
-		stack.commands.HostArgumentProcessor,
-		stack.commands.ApplianceArgumentProcessor):
+class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor):
 	"""
 	Remove a storage controller configuration from the database.
 
@@ -54,54 +51,8 @@ class Command(stack.commands.remove.command,
 	</example>
 	"""
 
-	def run(self, params, args):
-		scope = None
-		oses = []
-		appliances = []
-		hosts = []
-
-		if len(args) == 0:
-			scope = 'global'
-		elif len(args) == 1:
-			try:
-				oses = self.getOSNames(args)
-			except:
-				oses = []
-
-			try:
-				appliances = self.getApplianceNames(args)
-			except:
-				appliances = []
-
-			try:
-				hosts = self.getHostnames(args)
-			except:
-				hosts = []
-		else:
-			raise ArgRequired(self, 'scope')
-
-		if not scope:
-			if args[0] in oses:
-				scope = 'os'
-			elif args[0] in appliances:
-				scope = 'appliance'
-			elif args[0] in hosts:
-				scope = 'host'
-
-		if not scope:
-			raise ArgValue(self, 'scope', 'a valid os, appliance name or host name')
-
-		if scope == 'global':
-			name = None
-		else:
-			name = args[0]
-
-		adapter, enclosure, slot = self.fillParams([
-			('adapter', None), 
-			('enclosure', None),
-			('slot', None, True)
-			])
-
+	def validation(self, adapter, enclosure, slot):
+		"""Validate the parameters input."""
 		if adapter and adapter != '*':
 			try:
 				adapter = int(adapter)
@@ -134,33 +85,35 @@ class Command(stack.commands.remove.command,
 				if s in slots:
 					raise ParamError(self, 'slot', '"%s" is listed twice' % s)
 				slots.append(s)
+		return adapter, enclosure, slots
 
-		#
+
+	def run(self, params, args):
+		scope, adapter, enclosure, slot = self.fillParams([
+			('scope', 'global'),
+			('adapter', None), 
+			('enclosure', None),
+			('slot', None, True)
+			])
+		adapter, enclosure, slots = self.validation(adapter, enclosure, slot)
 		# look up the id in the appropriate 'scope' table
-		#
-		tableid = None
-		if scope == 'global':
-			tableid = -1
-		elif scope == 'appliance':
-			self.db.execute("""select id from appliances where
-				name = '%s' """ % name)
-			tableid, = self.db.fetchone()
-		elif scope == 'host':
-			self.db.execute("""select id from nodes where name = %s """, name)
-			tableid, = self.db.fetchone()
+		tableids = self.get_scope_name_tableid(scope, params, args)
+		for each_tableid in tableids:
 
-		deletesql = """delete from storage_controller where scope = %s and tableid = %s """, (scope, tableid)
+			deletesql = "delete from storage_partition where scope = %s and tableid = %s "
+			delete_tuple = (scope, each_tableid)
 
-		if adapter != -1:
-			deletesql += ' and adapter = %s', adapter
+			if adapter and (adapter != '*' or adapter != -1):
+				deletesql += " and adapter = %s"
+				delete_tuple += (adapter,)
 
-		if enclosure != -1:
-			deletesql += ' and enclosure = %s', enclosure
+			if enclosure and (enclosure != '*' or enclosure != -1):
+				deletesql += " and enclosure = %s"
+				delete_tuple += (enclosure,)
 
-		if slot != '*':
-			for slot in slots:
-				dsql = '%s and slot = %s', (deletesql, slot)
-				self.db.execute(dsql)
-		else:
-			self.db.execute(deletesql)
+			if slot and slot != '*':
+				for slot in slots:
+					deletesql += " and slot = %s"
+					delete_tuple += (slot,)
 
+			self.db.execute(deletesql, delete_tuple)
