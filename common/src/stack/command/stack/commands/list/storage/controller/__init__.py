@@ -10,10 +10,7 @@ import stack.commands
 from stack.exception import ArgError, ParamValue
 
 
-class Command(stack.commands.list.command,
-		stack.commands.OSArgumentProcessor,
-		stack.commands.ApplianceArgumentProcessor,
-		stack.commands.HostArgumentProcessor):
+class Command(stack.commands.list.command, stack.commands.ScopeParamProcessor):
 	"""
 	List the storage controller configuration for one of the following:
 	global, os, appliance or host.
@@ -60,7 +57,7 @@ class Command(stack.commands.list.command,
 		          'host' : base_query % ('nodes', 'a.id', 'host') + needs_id + order_by}
 
 		if scope != 'global':
-			return self.db.select(querys[scope], tableid)
+			return self.db.select(querys[scope], str(tableid))
 		else:
 			return self.db.select(querys[scope])
 
@@ -112,6 +109,10 @@ class Command(stack.commands.list.command,
 
 				i += 1
 
-		self.endOutput(header=['scope', 'enclosure', 'adapter', 'slot', 
-			'raidlevel', 'arrayid', 'options' ], trimOwner=False)
+		if scope == 'global':
+			self.endOutput(header=['scope', 'enclosure', 'adapter', 'slot',
+			                       'raidlevel', 'arrayid', 'options'], trimOwner=False)
+		else:
 
+			self.endOutput(header=['scope', 'name', 'enclosure', 'adapter', 'slot',
+			                       'raidlevel', 'arrayid', 'options'], trimOwner=False)
