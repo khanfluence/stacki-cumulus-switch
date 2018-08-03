@@ -79,9 +79,9 @@ class Command(stack.commands.list.command, stack.commands.ScopeParamProcessor):
 
 		# We may have a list of hosts (a:backend), so we need to find the data for all of them
 		for each_tableid in tableids:
-			self.scope_query(scope, each_tableid)
+			fetchall = self.scope_query(scope, each_tableid)
 			i = 0
-			for row in self.db.fetchall():
+			for row in fetchall:
 				name = ''
 				if scope == 'global':
 					sql_scope, adapter, enclosure, slot, raidlevel, arrayid, options = row
@@ -104,8 +104,10 @@ class Command(stack.commands.list.command, stack.commands.ScopeParamProcessor):
 				# Remove leading and trailing double quotes
 				options = options.strip("\"")
 
-				self.addOutput(name, [enclosure, adapter, slot,
-				                      raidlevel, arrayid, options])
+				if scope == 'global':
+					self.addOutput(sql_scope, [enclosure, adapter, slot, raidlevel, arrayid, options])
+				else:
+					self.addOutput(sql_scope, [name, enclosure, adapter, slot, raidlevel, arrayid, options])
 
 				i += 1
 

@@ -8,13 +8,10 @@ class TestAddStorageControllerBase:
 	"""
 
 	def test_add_storage_controller(self, host):
-		#this should work and have no errors
-		results = host.run('stack add storage controller adapter=1 arrayid=2 enclosure=3 raidlevel=4 slot=5')
-		assert results.rc == 0
 
-		#make sure that we are able to list the entry we just added
+		# There is a default raid0 config existing:
 		results = host.run('stack list storage controller')
-		assert 'redhat' in str(results.stdout)
+		assert 'global' in str(results.stdout)
 
 		#this should not work because 'blah' is not a valid scope
 		results = host.run('stack add storage controller blah adapter=1 arrayid=2 enclosure=3 raidlevel=4 slot=5')
