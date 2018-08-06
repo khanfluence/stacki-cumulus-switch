@@ -19,7 +19,7 @@ def test_remove_storage_controller(host, csvfile):
 	# check that it has no controller info by default
 	result = host.run('stack list storage controller %s' % hostname)
 	assert result.rc == 0
-	assert result.stdout == ''
+	assert len(result.stdout.splitlines()) == 2
 
 	# load the controller file
 	result = host.run('stack load storage controller file=%s' % input_file)
@@ -81,23 +81,23 @@ def test_negative_remove_storage_controller(host):
 		elif scope != 'global' and len(args) < 1:
 			raise ArgRequired(self, '%s name' % scope)
 	"""
-	accepted_scopes = ['global', 'os', 'appliance', 'host']
+	accepted_scopes = ['global', 'os', 'appliance', 'host', 'environment']
 
 	# Provide extra data on global scope
-	result = host.run('stack remove storage controller scope=global backend-0-0')
+	result = host.run('stack remove storage controller scope=global backend-0-0 slot=1')
 	assert result.rc == 255
 	assert 'argument unexpected' in result.stderr
 
-	result = host.run('stack remove storage controller scope=garbage backend-0-0')
+	result = host.run('stack remove storage controller scope=garbage backend-0-0 slot=1')
 	assert result.rc == 255
-	assert "{'scope': 'garbage'}" in result.stderr
+	assert '"scope" parameter must be one of the following:' in result.stderr
 
 	for scope in accepted_scopes:
 		if scope != 'global':
-			result = host.run('stack remove storage controller scope=%s' % scope)
+			result = host.run('stack remove storage controller scope=%s slot=1' % scope)
 			assert result.rc == 255
 			assert '"%s name" argument is required' % scope in result.stderr
 		else:
-			result = host.run('stack remove storage controller scope=%s' % scope)
+			result = host.run('stack remove storage controller scope=%s slot=1' % scope)
 			assert result.rc == 255
 			assert '"device OR mountpoint" parameter is required' in result.stderr

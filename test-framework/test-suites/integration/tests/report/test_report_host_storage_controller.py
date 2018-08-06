@@ -1,7 +1,7 @@
 import pytest
 
 @pytest.mark.usefixtures("revert_database")
-class TestLoadStoragePartition:
+class TestLoadStorageController:
 
 	# add other csv's here after they are fixed, or better yet make this a glob
 	EX_STORAGE_SPREADSHEETS = ['hp-raid1+raid10', 'hp-raid10-advanced', 'hp-raid5', 'hp-raid50', 'hp-raid6',
@@ -47,8 +47,8 @@ class TestLoadStoragePartition:
 			# check that it has no controller info by default
 			result = host.run('stack report host storage controller backend-0-0')
 			assert result.rc == 0
-			assert result.stdout == "{'scope': 'global', 'enclosure': None, 'adapter': None, 'slot': '*', " \
-			                        "'raidlevel': '0', 'arrayid': '*', 'options': ''}]"
+			assert result.stdout == "[{'scope': 'global', 'enclosure': None, 'adapter': None, 'slot': '*', " \
+			                        "'raidlevel': '0', 'arrayid': '*', 'options': ''}]\n"
 
 			# load the controller file
 			result = host.run(f'stack load storage controller file={input_file}')
