@@ -180,7 +180,6 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 			])
 
 		tableids = self.get_scope_name_tableid(scope, params, args)
-
 		# make sure the specification doesn't already exist
 		adapter, enclosure, slots, hotspares, arrayid = self.validation(adapter, enclosure, slot, hotspare,
 		                                                                raidlevel, arrayid)

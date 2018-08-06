@@ -39,7 +39,6 @@ def test_remove_storage_controller(host, csvfile):
 	assert '- 6' in result.stdout
 	assert '- 7' in result.stdout
 	assert '- 8' in result.stdout
-	assert '/var/opt/teradata' in result.stdout
 	assert result.stderr == ''
 
 	# remove the controller info for a single device
@@ -58,7 +57,7 @@ def test_remove_storage_controller(host, csvfile):
 	assert '- 8' not in result.stdout
 
 	# remove the controller info for a single mountpoint
-	result = host.run('stack remove storage controller %s arrayid=2' % hostname)
+	result = host.run('stack remove storage controller %s arrayid=2 slot="*"' % hostname)
 	assert result.rc == 0
 	assert result.stdout == ''
 	assert result.stderr == ''
@@ -73,7 +72,7 @@ def test_remove_storage_controller(host, csvfile):
 	assert '- 7' in result.stdout
 
 	# remove all the controller info
-	result = host.run('stack remove storage controller %s enclosure="*"' % hostname)
+	result = host.run('stack remove storage controller %s enclosure="*" slot="*"' % hostname)
 	assert result.rc == 0
 	assert result.stdout == ''
 	assert result.stderr == ''

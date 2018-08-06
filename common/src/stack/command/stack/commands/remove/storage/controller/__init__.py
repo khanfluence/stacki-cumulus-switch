@@ -51,7 +51,7 @@ class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor)
 	</example>
 	"""
 
-	def validation(self, adapter, enclosure, slot):
+	def validation(self, adapter, enclosure, arrayid, slot):
 		"""Validate the parameters input."""
 		if adapter and adapter != '*':
 			try:
@@ -73,6 +73,16 @@ class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor)
 		else:
 			enclosure = -1
 
+		if arrayid and arrayid != '*':
+			try:
+				arrayid = int(arrayid)
+			except:
+				raise ParamType(self, 'enclosure', 'integer')
+			if arrayid < 0:
+				raise ParamValue(self, 'enclosure', '>= 0')
+		else:
+			arrayid = -1
+
 		slots = []
 		if slot and slot != '*':
 			for s in slot.split(','):
@@ -85,17 +95,18 @@ class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor)
 				if s in slots:
 					raise ParamError(self, 'slot', '"%s" is listed twice' % s)
 				slots.append(s)
-		return adapter, enclosure, slots
+		return adapter, enclosure, arrayid, slots
 
 
 	def run(self, params, args):
-		scope, adapter, enclosure, slot = self.fillParams([
+		scope, adapter, enclosure, arrayid, slot = self.fillParams([
 			('scope', 'global'),
 			('adapter', None), 
 			('enclosure', None),
+			('arrayid', None),
 			('slot', None, True)
 			])
-		adapter, enclosure, slots = self.validation(adapter, enclosure, slot)
+		adapter, enclosure, arrayid, slots = self.validation(adapter, enclosure, arrayid, slot)
 		# look up the id in the appropriate 'scope' table
 		tableids = self.get_scope_name_tableid(scope, params, args)
 		for each_tableid in tableids:
@@ -115,5 +126,9 @@ class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor)
 				for slot in slots:
 					deletesql += " and slot = %s"
 					delete_tuple += (slot,)
+
+			if arrayid and arrayid != '*':
+				deletesql += " and arrayid = %s"
+				delete_tuple += (arrayid,)
 
 			self.db.execute(deletesql, delete_tuple)

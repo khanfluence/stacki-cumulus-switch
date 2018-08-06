@@ -21,8 +21,7 @@ class Implementation(stack.commands.ApplianceArgumentProcessor,
 	a comma-separated formatted file.
 	"""
 
-	def doit(self, host, slot, enclosure, adapter, raid, array, options,
-			line):
+	def doit(self, host, slot, enclosure, adapter, raid, array, options, line):
 		#
 		# error checking
 		#
