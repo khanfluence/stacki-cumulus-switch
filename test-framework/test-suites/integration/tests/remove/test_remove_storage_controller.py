@@ -2,13 +2,14 @@ import os
 import subprocess
 import pytest
 
-STORAGE_SPREADSHEETS = ['multi_teradata_global', 'multi_teradata_backend']
+STORAGE_SPREADSHEETS = ['backend', 'global']
 
 @pytest.mark.usefixtures("revert_database")
 @pytest.mark.usefixtures("add_host")
 @pytest.mark.parametrize("csvfile", STORAGE_SPREADSHEETS)
 def test_remove_storage_controller(host, csvfile):
 	# get filename
+
 	dirn = '/export/test-files/load/storage_controller_'
 	input_file = dirn + csvfile + '_input' + '.csv'
 
@@ -19,7 +20,10 @@ def test_remove_storage_controller(host, csvfile):
 	# check that it has no controller info by default
 	result = host.run('stack list storage controller %s' % hostname)
 	assert result.rc == 0
-	assert len(result.stdout.splitlines()) == 2
+	if hostname == ''
+		assert len(result.stdout.splitlines()) == 2
+	else:
+		assert result.stdout == ''
 
 	# load the controller file
 	result = host.run('stack load storage controller file=%s' % input_file)
@@ -98,6 +102,6 @@ def test_negative_remove_storage_controller(host):
 			assert result.rc == 255
 			assert '"%s name" argument is required' % scope in result.stderr
 		else:
-			result = host.run('stack remove storage controller scope=%s slot=1' % scope)
+			result = host.run('stack remove storage controller scope=%s' % scope)
 			assert result.rc == 255
-			assert '"device OR mountpoint" parameter is required' in result.stderr
+			assert '"slot" parameter is required' in result.stderr

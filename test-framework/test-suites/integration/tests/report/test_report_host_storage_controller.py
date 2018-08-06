@@ -36,11 +36,11 @@ class TestLoadStorageController:
 	def test_example_load_report_storage_controller(self, host):
 		# get filename
 		"""Edit the file as needed to match particular environment."""
-		csv_files = ['global', 'os', 'appliance', 'environment', 'host']
+		scopes = ['global', 'os', 'appliance', 'environment', 'host']
 		# Going down the list to make sure priority is applied correctly on report
 		result = host.run('stack add environment master_node')
 		assert result.rc == 0
-		for csvfile in csv_files:
+		for csvfile in scopes:
 			dirn = '/export/test-files/load/storage_controller_'
 			input_file = dirn + csvfile + '_input' + '.csv'
 

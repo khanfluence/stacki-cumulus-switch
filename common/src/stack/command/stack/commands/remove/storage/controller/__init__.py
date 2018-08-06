@@ -100,7 +100,7 @@ class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor)
 		tableids = self.get_scope_name_tableid(scope, params, args)
 		for each_tableid in tableids:
 
-			deletesql = "delete from storage_partition where scope = %s and tableid = %s "
+			deletesql = "delete from storage_controller where scope = %s and tableid = %s "
 			delete_tuple = (scope, each_tableid)
 
 			if adapter and (adapter != '*' or adapter != -1):
