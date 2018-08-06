@@ -47,7 +47,8 @@ class TestLoadStoragePartition:
 			# check that it has no controller info by default
 			result = host.run('stack report host storage controller backend-0-0')
 			assert result.rc == 0
-			assert result.stdout == '[]\n'
+			assert result.stdout == "{'scope': 'global', 'enclosure': None, 'adapter': None, 'slot': '*', " \
+			                        "'raidlevel': '0', 'arrayid': '*', 'options': ''}]"
 
 			# load the controller file
 			result = host.run(f'stack load storage controller file={input_file}')
