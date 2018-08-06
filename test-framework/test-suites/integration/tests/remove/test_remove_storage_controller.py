@@ -20,7 +20,7 @@ def test_remove_storage_controller(host, csvfile):
 	# check that it has no controller info by default
 	result = host.run('stack list storage controller %s' % hostname)
 	assert result.rc == 0
-	if hostname == ''
+	if hostname == '':
 		assert len(result.stdout.splitlines()) == 2
 	else:
 		assert result.stdout == ''
