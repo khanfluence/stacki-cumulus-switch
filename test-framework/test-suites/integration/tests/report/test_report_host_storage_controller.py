@@ -51,7 +51,7 @@ class TestLoadStorageController:
 			                        "'raidlevel': '0', 'arrayid': '*', 'options': ''}]\n"
 
 			# load the controller file
-			result = host.run(f'stack load storage controller file={input_file}')
+			result = host.run(f'stack load storage controller file={input_file} scope={csvfile}')
 			assert result.rc == 0
 
 			# check that it has controller info

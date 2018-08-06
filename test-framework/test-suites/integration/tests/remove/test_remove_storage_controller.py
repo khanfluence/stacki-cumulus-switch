@@ -32,34 +32,48 @@ def test_remove_storage_controller(host, csvfile):
 	# check that it has controller info
 	result = host.run('stack list storage controller %s' % hostname)
 	assert result.rc == 0
-	assert 'sda' in result.stdout
-	assert 'sdb' in result.stdout
+	assert '- 2' in result.stdout
+	assert '- 3' in result.stdout
+	assert '- 4' in result.stdout
+	assert '- 5' in result.stdout
+	assert '- 6' in result.stdout
+	assert '- 7' in result.stdout
+	assert '- 8' in result.stdout
 	assert '/var/opt/teradata' in result.stdout
 	assert result.stderr == ''
 
 	# remove the controller info for a single device
-	result = host.run('stack remove storage controller %s device=sdb' % hostname)
+	result = host.run('stack remove storage controller %s slot=8' % hostname)
 	assert result.rc == 0
-	assert result.stdout == ''
 	assert result.stderr == ''
 	# Check that it is indeed removed
 	result = host.run('stack list storage controller %s' % hostname)
 	assert result.rc == 0
-	assert 'sda' in result.stdout
-	assert 'sdb' not in result.stdout
+	assert '- 2' in result.stdout
+	assert '- 3' in result.stdout
+	assert '- 4' in result.stdout
+	assert '- 5' in result.stdout
+	assert '- 6' in result.stdout
+	assert '- 7' in result.stdout
+	assert '- 8' not in result.stdout
 
 	# remove the controller info for a single mountpoint
-	result = host.run('stack remove storage controller %s mountpoint="/var/opt/teradata"' % hostname)
+	result = host.run('stack remove storage controller %s arrayid=2' % hostname)
 	assert result.rc == 0
 	assert result.stdout == ''
 	assert result.stderr == ''
 	# Check that it is indeed removed
 	result = host.run('stack list storage controller %s' % hostname)
 	assert result.rc == 0
-	assert '/var/opt/teradata' not in result.stdout
+	assert '- 2' in result.stdout
+	assert '- 3' not in result.stdout
+	assert '- 4' not in result.stdout
+	assert '- 5' not in result.stdout
+	assert '- 6' not in result.stdout
+	assert '- 7' in result.stdout
 
 	# remove all the controller info
-	result = host.run('stack remove storage controller %s device="*"' % hostname)
+	result = host.run('stack remove storage controller %s enclosure="*"' % hostname)
 	assert result.rc == 0
 	assert result.stdout == ''
 	assert result.stderr == ''
