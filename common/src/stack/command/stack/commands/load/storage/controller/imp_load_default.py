@@ -68,9 +68,13 @@ class Implementation(stack.commands.ApplianceArgumentProcessor,
 			self.owner.hosts[host][array]['hotspare'].append(slot)
 			
 		else:
-			if slot in self.owner.hosts[host][array]['slot']:
-				msg = 'duplicate slot "%s" found in the spreadsheet at line %d' % (slot, line)
-				raise CommandError(self.owner, msg)
+			# Slot and enclosure may have been reused in another array, so we need to check all of them
+			for each_array in self.owner.hosts[host]:
+				if slot in self.owner.hosts[host][each_array]['slot'] \
+						and enclosure in self.owner.hosts[host][each_array]['enclosure'] :
+					msg = 'Enclosure "%s" and slot "%s" is already utilized in array "%s", error found in the ' \
+					      'spreadsheet at line %d ' % (enclosure, slot, each_array, line)
+					raise CommandError(self.owner, msg)
 
 			if raid == 'hotspare':
 				if 'hotspare' not in self.owner.hosts[host][array].keys():
@@ -83,7 +87,7 @@ class Implementation(stack.commands.ApplianceArgumentProcessor,
 					self.owner.hosts[host][array]['raid'] = raid
 
 				if raid != self.owner.hosts[host][array]['raid']:
-					msg = 'RAID level mismatch "%s" found in the spreadsheet at line %d' % (raid, line)
+					msg = 'RAID level mismatch "%s", error found in the spreadsheet at line %d' % (raid, line)
 					raise CommandError(self.owner, msg)
 
 

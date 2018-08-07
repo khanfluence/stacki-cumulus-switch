@@ -101,7 +101,7 @@ class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor)
 	def run(self, params, args):
 		scope, adapter, enclosure, arrayid, slot = self.fillParams([
 			('scope', 'global'),
-			('adapter', None), 
+			('adapter', '*'),
 			('enclosure', None),
 			('arrayid', None),
 			('slot', None, True)
@@ -114,21 +114,21 @@ class Command(stack.commands.remove.command, stack.commands.ScopeParamProcessor)
 			deletesql = "delete from storage_controller where scope = %s and tableid = %s "
 			delete_tuple = (scope, each_tableid)
 
-			if adapter and (adapter != '*' or adapter != -1):
+			if adapter and adapter != '*' and adapter != -1:
 				deletesql += " and adapter = %s"
 				delete_tuple += (adapter,)
 
-			if enclosure and (enclosure != '*' or enclosure != -1):
+			if enclosure and enclosure != '*' and enclosure != -1:
 				deletesql += " and enclosure = %s"
 				delete_tuple += (enclosure,)
+
+			if arrayid and arrayid != '*' and arrayid != -1:
+				deletesql += " and arrayid = %s"
+				delete_tuple += (arrayid,)
 
 			if slot and slot != '*':
 				for slot in slots:
 					deletesql += " and slot = %s"
 					delete_tuple += (slot,)
-
-			if arrayid and arrayid != '*':
-				deletesql += " and arrayid = %s"
-				delete_tuple += (arrayid,)
 
 			self.db.execute(deletesql, delete_tuple)

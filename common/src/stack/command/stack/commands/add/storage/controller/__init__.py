@@ -72,11 +72,10 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 	"""
 
 	def check_for_duplicates(self, scope, tableid, adapter, enclosure, slot):
-		self.db.execute("""select scope, tableid, adapter, enclosure,
-			slot from storage_controller where
-			scope = '%s' and tableid = %s and adapter = %s and
-			enclosure = %s and slot = %s""" % (scope, tableid,
-			adapter, enclosure, slot))
+		# Intentionally not looking for adapter, as regardless of the adapter a disk can't be used twice
+		self.db.execute("""select scope, tableid, adapter, enclosure, slot from storage_controller 
+			where scope = '%s' and tableid = %s and and enclosure = %s and slot = %s""" %
+		                (scope, tableid, enclosure, slot))
 
 		row = self.db.fetchone()
 
@@ -84,8 +83,8 @@ class Command(stack.commands.add.command, stack.commands.ScopeParamProcessor):
 			if scope == 'host':
 				# Give useful error with host name instead of just generic 'host'
 				scope = self.db.select('name from nodes where id = %s', str(tableid))[0][0]
-			raise CommandError(self, 'controller specification for adapter "%s", enclosure "%s", slot "%s" already '
-			                         'exists in the database for scope: "%s"'  % (adapter, enclosure, slot, scope))
+			raise CommandError(self, 'controller specification for enclosure "%s", slot "%s" already '
+			                         'exists in the database for scope: "%s"'  % (enclosure, slot, scope))
 
 
 	def validation(self, adapter, enclosure, slot, hotspare, raidlevel, arrayid):

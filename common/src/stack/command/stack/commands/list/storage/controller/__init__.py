@@ -87,8 +87,6 @@ class Command(stack.commands.list.command, stack.commands.ScopeParamProcessor):
 					sql_scope, adapter, enclosure, slot, raidlevel, arrayid, options = row
 				else:
 					sql_scope, name, adapter, enclosure, slot, raidlevel, arrayid, options = row
-				if i > 0:
-					name = None
 				if adapter == -1:
 					adapter = None
 				if enclosure == -1:
