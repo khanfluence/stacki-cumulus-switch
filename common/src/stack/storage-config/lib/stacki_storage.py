@@ -9,8 +9,8 @@
 
 import subprocess
 import os
+import sys
 
-from stack_site import attributes
 
 def attr2bool(s):
 	if type(s) == type([]) and s:
@@ -33,6 +33,7 @@ def sortDiskId(entry):
 	return key
 
 
+# Called by outside scripts
 def getDeviceList(disks):
 	devices = []
 	for disk in disks:
@@ -53,6 +54,7 @@ def getDeviceList(disks):
 	return devices
 
 
+# Called by outside scripts
 def getHostDisks(nukedisks):
 	#
 	# create a dictionary for the attached currently configured 
@@ -67,10 +69,9 @@ def getHostDisks(nukedisks):
 	#		'nuke'		: 0
 	#	}]
 	#
-	lsblk = ['lsblk', '-lio', 'NAME,RM,RO,TYPE']
+	block_info = get_block_info()
 	# sles 11 doesn't support the TYPE column
-	if attributes['os.version'] == "11.x" and attributes['os'] == "sles":
-		lsblk = ['lsblk', '-lio', 'NAME,RM,RO']
+	lsblk = ['lsblk', '-lio', 'NAME,RM,RO']
 	p = subprocess.run(lsblk,
 			   stdin=subprocess.PIPE,
 			   stdout=subprocess.PIPE,
@@ -79,22 +80,16 @@ def getHostDisks(nukedisks):
 	diskentry = None
 	diskid = 1
 
-	for l in p.stdout.decode().split('\n'):
-		# Ignore empty lines
-		if not l.strip():
-			continue
-
-		#
+	for name in block_info:
+		mediatype = block_info[name]['devtype']
+		# Skipping the header
 		# Skip read-only and removable devices
-		#
-		arr = l.split()
-		name = arr[0].strip()
-		removable = arr[1].strip()
-		readonly = arr[2].strip()
-		if attributes['os.version'] == "11.x" and attributes['os'] == "sles":
-			mediatype = get_sles11_media_type(name)
-		else:
-			mediatype = arr[3].strip()
+		# Skip unkown device types
+		if name.lower() == 'name' or \
+				int(block_info[name]['removable']) or \
+				int(block_info[name]['readonly']) or \
+				mediatype not in [ 'disk', 'part', 'raid', 'lvm' ]:
+			continue
 
 		if mediatype.startswith('raid'):
 			#
@@ -102,9 +97,6 @@ def getHostDisks(nukedisks):
 			# just shorten it to 'raid'.
 			#
 			mediatype = 'raid'
-
-		if removable == '1' or readonly == '1' or mediatype not in [ 'disk', 'part', 'raid', 'lvm' ]:
-			continue
 
 		if mediatype == 'disk':
 			diskentry = None
@@ -120,12 +112,19 @@ def getHostDisks(nukedisks):
 					nuke = 0
 
 				disks.append({
-					'device'	: name,
-					'diskid'	: diskid,
-					'part'		: [],
-					'raid'		: [],
-					'lvm'		: [],
-					'nuke'		: nuke 
+					'device' : name,
+					'diskid' : diskid,
+					'part' : [],
+					'raid' : [],
+					'lvm' : [],
+					'nuke' : nuke,
+					# Need these to act like partitions for total disk size reporting in 'stack list host partition'
+					'mountpoint' : '',
+					'size' : int(int(block_info[name]['size']) / (1024 * 1024)),
+					'start' : int(int(block_info[name]['start']) / (1024 * 1024)),
+					'diskpart' : name,
+					'fstype' : '',
+					'uuid' : ''
 				})
 
 				for disk in disks:
@@ -137,7 +136,7 @@ def getHostDisks(nukedisks):
 		else:
 			if name not in diskentry[mediatype]:
 				diskentry[mediatype].append(name)
-		
+
 	if disks:
 		disks.sort(key = sortDiskId)
 
@@ -158,7 +157,7 @@ def getDiskPartNumber(disk):
 	partnumber = 0
 
 	p = subprocess.run([ 'blkid', '-o', 'export', '-s', 'PART_ENTRY_NUMBER', '-p', '/dev/%s' % disk ],
-			   stdin=subprocess.PIPE, 
+			   stdin=subprocess.PIPE,
 			   stdout=subprocess.PIPE,
 			   stderr=subprocess.PIPE)
 	#
@@ -172,13 +171,15 @@ def getDiskPartNumber(disk):
 	return partnumber
 
 
+# Called by outside scripts
 def getHostPartitions(disks, host_fstab):
 	partitions = []
+	block_info = get_block_info()
 
 	for d in disks:
 		disk = d['device']
-	
-		p = subprocess.run([ 'lsblk', '-nrbo', 'NAME,SIZE,UUID,LABEL,MOUNTPOINT,FSTYPE', '/dev/%s' % disk ],
+
+		p = subprocess.run([ 'lsblk', '-nrbo', 'NAME,MOUNTPOINT,FSTYPE', '/dev/%s' % disk ],
 				   stdin=subprocess.PIPE, 
 				   stdout=subprocess.PIPE,
 				   stderr=subprocess.PIPE)
@@ -190,23 +191,21 @@ def getHostPartitions(disks, host_fstab):
 
 			arr = l.split(' ')
 
-			#
-			# ignore the "whole" disk device (we are interested
-			# only in partitions)
-			#
 			diskname = arr[0]
-			if diskname == disk:
+			# ignore the "whole" disk device (we are interested only in partitions)
+			# Skipping the header or non-partitions:
+			if diskname.lower() == 'name' or diskname == disk:
 				continue
 
 			try:
-				size = int(int(arr[1]) / (1024 * 1024))
+				size = int(int(block_info[diskname]['size']) / (1024 * 1024))
 			except:
 				size = 0
 
-			uuid = arr[2]
-			label = arr[3]
-			mountpoint = arr[4]
-			fstype = arr[5]
+			uuid = block_info[diskname]['uuid']
+			label = block_info[diskname]['label']
+			mountpoint = arr[1]
+			fstype = arr[2]
 
 			if not mountpoint:
 				mountpoint = getHostMountpoint(host_fstab,
@@ -224,13 +223,13 @@ def getHostPartitions(disks, host_fstab):
 			disk_partitions['fstype'] = fstype
 			disk_partitions['uuid'] = uuid
 			disk_partitions['diskpart'] = diskname
+			disk_partitions['start'] = int(int(block_info[diskname]['start']) / (1024 * 1024))
 
 			if partnumber:
 				disk_partitions['partnumber'] = partnumber
 
 			if label:
-				disk_partitions['options'] = \
-					'--label=%s' % label
+				disk_partitions['options'] = '--label=%s' % label
 			else:
 				disk_partitions['options'] = ''
 
@@ -239,6 +238,7 @@ def getHostPartitions(disks, host_fstab):
 	return partitions
 
 
+# Called by outside scripts
 def getHostFstab(devices):
 	import tempfile
 
@@ -249,8 +249,7 @@ def getHostFstab(devices):
 	fstab = mountpoint + '/etc/fstab'
 
 	for device in devices:
-		os.system('mount %s %s' % (device, mountpoint) + \
-			' > /dev/null 2>&1')
+		os.system('mount %s %s' % (device, mountpoint) + ' > /dev/null 2>&1')
 
 		if os.path.exists(fstab):
 			file = open(fstab)
@@ -258,22 +257,22 @@ def getHostFstab(devices):
 			for line in file.readlines():
 				entry = {}
 
-				l = line.split()
-				if len(l) < 3:
+				split_line = line.split()
+				if len(split_line) < 3:
 					continue
 
-				if l[0][0] == '#':
+				if split_line[0][0] == '#':
 					continue
 
-				entry['device'] = l[0].strip()
-				entry['mountpoint'] = l[1].strip()
-				entry['fstype'] = l[2].strip()
+				entry['device'] = split_line[0].strip()
+				entry['mountpoint'] = split_line[1].strip()
+				entry['fstype'] = split_line[2].strip()
 
 				host_fstab.append(entry)
 
 			file.close()
 
-		os.system('umount %s 2> /dev/null' % (mountpoint))
+		os.system('umount %s 2> /dev/null' % mountpoint)
 
 		if host_fstab:
 			break
@@ -286,25 +285,129 @@ def getHostFstab(devices):
 	return host_fstab
 
 
-def get_sles11_media_type(dev_name):
-	"""Determines disk and partition for SLES 11.
-	Because SLES 11 doesn't support TYPE field on lsblk commands
+
+def get_uuid_dict():
 	"""
-	p = subprocess.run(["hwinfo", "--block", "--short"],
-		stdin=subprocess.PIPE,
-		stdout=subprocess.PIPE,
-		stderr=subprocess.PIPE)
-	for l in p.stdout.decode().split('\n'):
-		# Ignore empty lines or non-path
-		if not l.strip() or "/" not in l.strip():
+	Trying to avoid lsblk, but couldn't find a better way than following symlinks to get UUID.
+	returns a dictionary where the keys are the '/dev/sda1' type device name and the value is the UUID:
+		{'/dev/sda4': '5275ca28-e9f6-4dcc-97c1-4ea9f72f7ed4',
+		'/dev/sda3': '4f013836-ce39-4cd5-8296-1d105f13ebf4',
+		'/dev/sda2': 'e66453ff-4909-4b2b-97be-a233a0e238a4',
+		'/dev/sda1': '07a03a78-dc74-439c-a0b9-2e44c90390e8'}
+	"""
+	uuid_dict = {}
+	devpath = '/dev/disk/by-uuid/'
+	for uuid in os.listdir(devpath):
+		# cleanup the symlink path to absolute:
+		uuid_dict[os.path.normpath(os.path.join(devpath, os.readlink(devpath + uuid)))] = uuid
+	return uuid_dict
+
+
+def get_label_dict():
+	"""
+	Trying to avoid lsblk, but couldn't find a better way than following symlinks to get labels.
+	returns a dictionary where the keys are the '/dev/sda1' type device name and the value is the label:
+	"""
+	label_dict = {}
+	devpath = '/dev/disk/by-label/'
+	for label in os.listdir(devpath):
+		# cleanup the symlink path to absolute:
+		label_dict[os.path.normpath(os.path.join(devpath, os.readlink(devpath + label)))] = label
+	return label_dict
+
+def set_label_and_uuid(current_disk, uuid_dict, label_dict):
+	"""
+	This will try to set the uuid and label if possible.
+	Otherwise it prints to stdout that it couldn't. It isn't necessarily an error, but is good to know.
+	Crated these set_ functions because get_block_info was getting messy. Wanted to clean it up a little.
+	"""
+	current_disk['label'] = ''
+	current_disk['uuid'] = ''
+	try:
+		current_disk['uuid'] = uuid_dict['/dev/' + current_disk['devname']]
+	except KeyError as key_error:
+		print('No uuid found for %s ' % key_error)
+	try:
+		current_disk['label'] = label_dict['/dev/' + current_disk['devname']]
+	except KeyError as key_error:
+		print('No label found for %s ' % key_error)
+	return current_disk['uuid'], current_disk['label']
+
+
+def set_size_and_start(current_disk, path ):
+	"""
+	Find the size of the disk and multiple it by the blocksize.
+	If it is an partition also find where that partitions starts.
+	Return each as an integer.
+	"""
+	current_disk['start'] = 0
+	with open(path + "/size") as size:
+		# I was nervous using a *512 in case we have 4k HDDs in the future, but
+		# after looking into it, /sys/class/block/*/size is reported in *512 regardless of the true blocksize
+		current_disk['size'] = int(size.readline().strip()) * 512
+		if current_disk['devtype'] == 'partition':
+			with open(path+ "/start") as start:
+				current_disk['start'] = int(start.readline().strip()) * 512
+	return current_disk['size'], current_disk['start']
+
+
+def set_readonly_and_removable(current_disk, path):
+	"""
+	Determine if the device is readonly or removable
+	Should return each as an int 0 or 1
+	"""
+	try:
+		with open(path + "/removable") as removable:
+			current_disk['removable'] = int(removable.readline().strip())
+	# If the file doesn't exist, set to not removable.
+	except FileNotFoundError:
+		current_disk['removable'] = 0
+
+	with open(path + "/ro") as ro:
+		current_disk['readonly'] = int(ro.readline().strip())
+	return current_disk['readonly'], current_disk['removable']
+
+
+def get_block_info():
+	"""
+	Utilizing the sysfs instead of blockid commands so we don't have if statements for different OS version.
+	 This returns more info than is needed, I would like to migrate more of the commands into this, but I need to
+	 test lvm and raid type scenarios before committing to that.
+	Example returned info:
+		'sdb' : {'major': '8', 'minor': '16', 'devname': 'sdb', 'devtype': 'disk', 'size': 799535005696}
+		'sda' : {'major': '8', 'minor': '0', 'devname': 'sda', 'devtype': 'disk', 'size': 799535005696}
+		'sda1' : {'major': '8', 'minor': '1', 'devname': 'sda1', 'devtype': 'partition', 'size': 16778264576, 'start': '2048', 'uuid': '07a03a78-dc74-439c-a0b9-2e44c90390e8'}
+		'sda2' :{'major': '8', 'minor': '2', 'devname': 'sda2', 'devtype': 'partition', 'size': 1052770304, 'start': '32772096', 'uuid': 'e66453ff-4909-4b2b-97be-a233a0e238a4'}
+		'sda3' :{'major': '8', 'minor': '3', 'devname': 'sda3', 'devtype': 'partition', 'size': 16780361728, 'start': '34828288', 'uuid': '4f013836-ce39-4cd5-8296-1d105f13ebf4'}
+		'sda4' :{'major': '8', 'minor': '4', 'devname': 'sda4', 'devtype': 'partition', 'size': 764921511936, 'start': '67602432', 'uuid': '5275ca28-e9f6-4dcc-97c1-4ea9f72f7ed4'}
+	 """
+	blocks = []
+	class_block = '/sys/class/block/'
+
+	# Grab these once, outside the loop.
+	uuid_dict = get_uuid_dict()
+	label_dict = get_label_dict()
+
+	for major_block_dev in os.listdir(class_block):
+		current_disk = {}
+
+		# Ignore loop devices
+		if 'loop' in major_block_dev:
 			continue
-		arr = l.split()
-		if dev_name == os.path.split(arr[0])[1]:
-			if str(arr[1]).lower() == "disk":
-				return "disk"
-			if str(arr[1]).lower() == "partition":
-				return "part"
-			return arr[1]
-	# If we can't find what we are looking for, lie and say its "loop"
-	# I think that is the only other option if it is not a disk or parition.
-	return "loop"
+
+		# Read through uevent for some details on the block device and add them to our dictionary
+		# eg: 'major' : 8, 'minor' : 0, 'devname' : sda, 'devtype' : disk
+		with open(class_block + major_block_dev + "/uevent") as uevent:
+			for each_line in uevent.readlines():
+				current_disk[each_line.split('=')[0].lower()] = each_line.split('=')[1].strip()
+		path = class_block + major_block_dev
+		current_disk['size'], current_disk['start'] = set_size_and_start(current_disk, path)
+		current_disk['readonly'], current_disk['removable'] = set_readonly_and_removable(current_disk, path)
+		current_disk['uuid'], current_disk['label'] = set_label_and_uuid(current_disk, uuid_dict, label_dict)
+		blocks.append(current_disk)
+
+	# Now that we have all the info lets build a dictionary using the devname as the keys
+	devname_dict = {}
+	for each in blocks:
+		devname_dict[each['devname']] = each
+	return devname_dict
