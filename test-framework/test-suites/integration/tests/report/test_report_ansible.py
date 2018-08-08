@@ -15,7 +15,8 @@ class TestReportAnsible:
 			[rack0]
 			frontend-0-0
 
-			</stack:file>"""
+			</stack:file>
+			"""
 		)
 
 	def test_report_ansible_no_attributes_with_backends(self, host, add_host):
@@ -40,7 +41,8 @@ class TestReportAnsible:
 			[rack0]
 			frontend-0-0
 
-			</stack:file>"""
+			</stack:file>
+			"""
 		)
 	
 	def test_report_ansible_with_attributes(self, host, add_host):
@@ -72,13 +74,10 @@ class TestReportAnsible:
 			[rack1]
 			backend-0-0
 
-			[test.1]
-			frontend-0-0
-
 			[test.2]
 			backend-0-0
 			frontend-0-0
-			
+
 			[test.3]
 			backend-0-0
 			frontend-0-0
@@ -88,6 +87,10 @@ class TestReportAnsible:
 
 			[rack0]
 			frontend-0-0
+			
+			[test.1]
+			frontend-0-0
 
-			</stack:file>"""
+			</stack:file>
+			"""
 		)
