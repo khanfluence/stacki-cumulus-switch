@@ -128,46 +128,58 @@ def revert_discovery():
 		os.remove("/var/log/stack-discovery.log")
 
 @pytest.fixture
-def add_host(hostname='backend-0-0', rack='1', rank='1', appliance='backend'):
-	cmd = f'stack add host {hostname} rack={rack} rank={rank} appliance={appliance}'
-	result = subprocess.run(cmd.split())
-	if result.returncode != 0:
-		pytest.fail('unable to add a dummy host')
+def add_host():
+	def _inner(hostname, rack, rank, appliance):
+		cmd = f'stack add host {hostname} rack={rack} rank={rank} appliance={appliance}'
+		result = subprocess.run(cmd.split())
+		if result.returncode != 0:
+			pytest.fail('unable to add a dummy host')
 
-	yield
+	# First use of the fixture adds backend-0-0
+	_inner('backend-0-0', '0', '0', 'backend')
 
-@pytest.fixture
-def add_host_with_interface(hostname='backend-0-0', rack='1', rank='1', appliance='backend', interface='eth0'):
-	cmd = f'stack add host {hostname} rack={rack} rank={rank} appliance={appliance}'
-	result = subprocess.run(cmd.split())
-	if result.returncode != 0:
-		pytest.fail('unable to add a dummy host')
-
-	cmd = f'stack add host interface {hostname} interface={interface}'
-	result = subprocess.run(cmd.split())
-	if result.returncode != 0:
-		pytest.fail('unable to add a dummy interface')
-
-	yield
+	# Then return the inner function, so we can call it inside the test 
+	# to get more hosts added
+	return _inner
 
 @pytest.fixture
-def add_switch(hostname='switch-0-0', rack='0', rank='0', appliance='switch', make='fake', model='unrl'):
-	cmd = f'stack add host {hostname} rack={rack} rank={rank} appliance={appliance}'
-	result = subprocess.run(cmd.split())
-	if result.returncode != 0:
-		pytest.fail('unable to add a dummy host')
+def add_host_with_interface():
+	def _inner(hostname, rack, rank, appliance, interface):
+		cmd = f'stack add host {hostname} rack={rack} rank={rank} appliance={appliance}'
+		result = subprocess.run(cmd.split())
+		if result.returncode != 0:
+			pytest.fail('unable to add a dummy host')
 
-	cmd = f'stack set host attr {hostname} attr=component.make value={make}'
-	result = subprocess.run(cmd.split())
-	if result.returncode != 0:
-		pytest.fail('unable to set make')
+		cmd = f'stack add host interface {hostname} interface={interface}'
+		result = subprocess.run(cmd.split())
+		if result.returncode != 0:
+			pytest.fail('unable to add a dummy interface')
 
-	cmd = f'stack set host attr {hostname} attr=component.model value={model}'
-	result = subprocess.run(cmd.split())
-	if result.returncode != 0:
-		pytest.fail('unable to set model')
+	_inner('backend-0-0', '0', '1', 'backend', 'eth0')
 
-	yield
+	return _inner
+
+@pytest.fixture
+def add_switch():
+	def _inner(hostname, rack, rank, appliance, make, model):
+		cmd = f'stack add host {hostname} rack={rack} rank={rank} appliance={appliance}'
+		result = subprocess.run(cmd.split())
+		if result.returncode != 0:
+			pytest.fail('unable to add a dummy host')
+
+		cmd = f'stack set host attr {hostname} attr=component.make value={make}'
+		result = subprocess.run(cmd.split())
+		if result.returncode != 0:
+			pytest.fail('unable to set make')
+
+		cmd = f'stack set host attr {hostname} attr=component.model value={model}'
+		result = subprocess.run(cmd.split())
+		if result.returncode != 0:
+			pytest.fail('unable to set model')
+
+	_inner('switch-0-0', '0', '0', 'switch', 'fake', 'unrl')
+
+	return _inner
 
 @pytest.fixture
 def set_host_interface(add_host_with_interface):
