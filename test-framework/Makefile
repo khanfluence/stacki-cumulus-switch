@@ -1,4 +1,5 @@
 SHELL = /bin/bash
+export VAGRANT_FORCE_COLOR = True
 
 .DEFAULT_GOAL = environment
 .PHONY = environment clean
