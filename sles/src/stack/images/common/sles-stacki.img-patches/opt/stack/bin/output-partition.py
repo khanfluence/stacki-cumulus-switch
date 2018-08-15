@@ -112,10 +112,9 @@ def partition_mount_label(element_partition, initialize, partition, mnt, label):
 		element_mountby.set('config:type', 'symbol')
 	if initialize:
 		ElementTree.SubElement(element_partition, 'label').text = '%s' % label
-	else:
-		element_partition_nr = ElementTree.SubElement(element_partition, 'partition_nr')
-		element_partition_nr.text = '%s' % partition['partnumber']
-		element_partition_nr.set('config:type', 'integer')
+	element_partition_nr = ElementTree.SubElement(element_partition, 'partition_nr')
+	element_partition_nr.text = '%s' % partition['partnumber']
+	element_partition_nr.set('config:type', 'integer')
 
 
 def partition_mount_uuid(element_partition, initialize, partition, mnt, format_partition):
