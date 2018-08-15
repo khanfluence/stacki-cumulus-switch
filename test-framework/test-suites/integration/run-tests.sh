@@ -22,7 +22,8 @@ else
 
     vagrant ssh frontend -c "sudo -i pytest -vvv \
         --cov-config=/export/tests/$COVERAGERC \
-        --cov=/opt/stack/lib/python3.6/site-packages/stack \
+        --cov=wsclient \
+        --cov=stack \
         --cov-report term \
         --cov-report html:/export/reports/integration \
         /export/tests/"
