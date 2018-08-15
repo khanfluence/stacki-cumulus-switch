@@ -1,9 +1,14 @@
 import json
+import multiprocessing
 import os
 import shutil
+import signal
 import subprocess
 import tempfile
+import time
 
+from django.core.servers import basehttp
+from django.core.wsgi import get_wsgi_application
 import pytest
 
 
@@ -231,3 +236,23 @@ def set_host_interface(add_host_with_interface):
 	}
 
 	return result
+
+@pytest.fixture
+def run_django_server():
+	# Run a Django server in a process
+	def runner():		
+		os.environ['DJANGO_SETTINGS_MODULE'] = 'stack.restapi.settings'
+		basehttp.run('127.0.0.1', 8000, get_wsgi_application())
+	
+	process = multiprocessing.Process(target=runner)
+	process.daemon = True
+	process.start()
+	
+	# Give the server a few seconds to get ready
+	time.sleep(2)
+
+	yield
+
+	# Tell the server it is time to clean up
+	os.kill(process.pid, signal.SIGINT)
+	process.join()
