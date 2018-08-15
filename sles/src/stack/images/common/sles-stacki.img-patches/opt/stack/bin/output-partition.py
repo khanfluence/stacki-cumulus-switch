@@ -119,7 +119,7 @@ def partition_mount_label(element_partition, initialize, partition, mnt, label):
 	# It is a paint o pass ostype through so many levels of functions. Just using the global attributes instead:
 	if attributes['os.version'] == "11.x" and attributes['os'] == "sles":
 		element_partition_nr = ElementTree.SubElement(element_partition, 'partition_nr')
-		element_partition_nr.text = '%s' % partition['partnumber']
+		element_partition_nr.text = '%s' % partition['partid']
 		element_partition_nr.set('config:type', 'integer')
 
 
@@ -136,7 +136,7 @@ def partition_mount_uuid(element_partition, initialize, partition, mnt, format_p
 
 	if not format_partition and 'uuid' in partition:
 		ElementTree.SubElement(element_partition, 'uuid').text = '%s' % partition['uuid']
-	elif format_partition and not initialize and 'partnumber' in partition:
+	elif format_partition and not initialize and 'partid' in partition:
 		#
 		# we are reusing a partition, and we are reformatting
 		# it which will create a new UUID, so we need to tell
@@ -144,7 +144,7 @@ def partition_mount_uuid(element_partition, initialize, partition, mnt, format_p
 		# is associated with
 		#
 		element_partition_nr = ElementTree.SubElement(element_partition, 'partition_nr')
-		element_partition_nr.text = '%s' % partition['partnumber']
+		element_partition_nr.text = '%s' % partition['partid']
 		element_partition_nr.set('config:type', 'integer')
 
 
@@ -410,7 +410,7 @@ def get_host_partitions(host_disks, host_fstab):
 			disk_partitions['uuid'] = uuid
 
 			if partnumber:
-				disk_partitions['partnumber'] = partnumber
+				disk_partitions['partid'] = partnumber
 
 			if label:
 				disk_partitions['options'] = \
