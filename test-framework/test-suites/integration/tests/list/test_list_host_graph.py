@@ -7,7 +7,6 @@ class TestListHostGraph:
 
 		result = host.run('stack list host graph')
 		assert result.rc == 0
-		print(result.stdout)
 		assert re.match(r"""
 			frontend-0-0\s+ digraph\ rocks\ {\s+
 			frontend-0-0\s+	size="100,100";\s+
