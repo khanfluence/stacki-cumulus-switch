@@ -30,7 +30,7 @@ class TestWSClient:
 			}
 		]
 
-	def test_wsclient_against_django(self, host, run_django_server):
+	def test_wsclient_pylib_against_django(self, host, run_django_server):
 		"Test the wsclient pylib code against our own Django instance"
 		
 		# Pull in the credentials
@@ -51,16 +51,9 @@ class TestWSClient:
 		client.login()
 		data = client.run('list network')
 
+		# Get the expected output directly from the CLI
+		result = host.run("stack list network output-format=json")
+		assert result.rc == 0
+		
 		# Make sure we got the data we were expecting
-		assert json.loads(data) == [
-			{
-				"network": "private",
-				"address": "192.168.0.0",
-				"mask": "255.255.255.0",
-				"gateway": "10.0.2.2",
-				"mtu": 1500,
-				"zone": "localdomain",
-				"dns": False,
-				"pxe": True
-			}
-		]
+		assert json.loads(data) == json.loads(result.stdout)
