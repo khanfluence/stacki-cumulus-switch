@@ -99,6 +99,9 @@ def partition_init_path(element_partition, initialize, partition, partition_id):
 		element_partition_id = ElementTree.SubElement(element_partition, 'partition_id')
 		element_partition_id.text = '%s' % partition_id
 		element_partition_id.set('config:type', 'integer')
+	element_partition_nr = ElementTree.SubElement(element_partition, 'partition_nr')
+	element_partition_nr.text = '%s' % partition['partid']
+	element_partition_nr.set('config:type', 'integer')
 
 
 def partition_mount_label(element_partition, initialize, partition, mnt, label):
@@ -112,9 +115,6 @@ def partition_mount_label(element_partition, initialize, partition, mnt, label):
 		element_mountby.set('config:type', 'symbol')
 	if initialize:
 		ElementTree.SubElement(element_partition, 'label').text = '%s' % label
-	element_partition_nr = ElementTree.SubElement(element_partition, 'partition_nr')
-	element_partition_nr.text = '%s' % partition['partid']
-	element_partition_nr.set('config:type', 'integer')
 
 
 def partition_mount_uuid(element_partition, initialize, partition, mnt, format_partition):
